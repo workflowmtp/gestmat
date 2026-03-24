@@ -10,7 +10,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const justRegistered = searchParams.get('registered') === '1';
 
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +20,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     const result = await signIn('credentials', {
-      username,
+      email,
       password,
       redirect: false,
     });
@@ -68,13 +68,13 @@ export default function LoginPage() {
 
         {/* Form */}
         <div className="mb-5">
-          <label className="gm-label">Identifiant</label>
+          <label className="gm-label">Email</label>
           <input
-            type="text"
+            type="email"
             className="gm-input"
-            placeholder="Votre identifiant"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Votre adresse email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && document.getElementById('pwd')?.focus()}
           />
         </div>

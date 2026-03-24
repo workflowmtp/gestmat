@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullname, setFullname] = useState('');
@@ -18,8 +17,8 @@ export default function RegisterPage() {
   async function handleRegister() {
     setError('');
 
-    if (!username || !password || !fullname) {
-      setError('Les champs identifiant, nom complet et mot de passe sont requis.');
+    if (!email || !password || !fullname) {
+      setError('Les champs nom complet, email et mot de passe sont requis.');
       return;
     }
 
@@ -38,7 +37,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, fullname, email, phone }),
+        body: JSON.stringify({ password, fullname, email, phone }),
       });
 
       const data = await res.json();
@@ -89,22 +88,15 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="gm-label">Identifiant *</label>
-            <input type="text" className="gm-input" placeholder="Choisissez un identifiant"
-              value={username} onChange={(e) => setUsername(e.target.value)} />
+            <label className="gm-label">Email *</label>
+            <input type="email" className="gm-input" placeholder="email@exemple.com"
+              value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="gm-label">Email</label>
-              <input type="email" className="gm-input" placeholder="email@exemple.com"
-                value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div>
-              <label className="gm-label">Téléphone</label>
-              <input type="tel" className="gm-input" placeholder="+237 6XX XXX XXX"
-                value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
+          <div>
+            <label className="gm-label">Téléphone</label>
+            <input type="tel" className="gm-input" placeholder="+237 6XX XXX XXX"
+              value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
 
           <div>

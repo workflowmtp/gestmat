@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -16,8 +15,8 @@ export default function ForgotPasswordPage() {
     setSuccess('');
     setResetUrl('');
 
-    if (!username && !email) {
-      setError('Veuillez entrer votre identifiant ou votre email.');
+    if (!email) {
+      setError('Veuillez entrer votre adresse email.');
       return;
     }
 
@@ -26,7 +25,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username || undefined, email: email || undefined }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
@@ -63,7 +62,7 @@ export default function ForgotPasswordPage() {
             GM
           </div>
           <h1 className="text-xl font-bold text-txt-primary">Mot de passe oublié</h1>
-          <p className="text-sm text-txt-secondary mt-1">Entrez vos informations pour réinitialiser</p>
+          <p className="text-sm text-txt-secondary mt-1">Entrez votre email pour réinitialiser</p>
         </div>
 
         {/* Error */}
@@ -95,20 +94,8 @@ export default function ForgotPasswordPage() {
             {/* Form */}
             <div className="space-y-4">
               <div>
-                <label className="gm-label">Identifiant</label>
-                <input type="text" className="gm-input" placeholder="Votre identifiant"
-                  value={username} onChange={(e) => setUsername(e.target.value)} />
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gm-border" />
-                <span className="text-xs text-txt-muted">ou</span>
-                <div className="flex-1 h-px bg-gm-border" />
-              </div>
-
-              <div>
                 <label className="gm-label">Adresse email</label>
-                <input type="email" className="gm-input" placeholder="Votre email de compte"
+                <input type="email" className="gm-input" placeholder="Votre adresse email"
                   value={email} onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSubmit()} />
               </div>

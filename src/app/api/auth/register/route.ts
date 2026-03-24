@@ -6,19 +6,12 @@ import prisma from '@/lib/prisma';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { username, password, fullname, email, phone } = body;
+    const { password, fullname, email, phone } = body;
 
     // Validation
-    if (!username || !password || !fullname) {
+    if (!email || !password || !fullname) {
       return NextResponse.json(
-        { error: 'Les champs identifiant, mot de passe et nom complet sont requis.' },
-        { status: 400 }
-      );
-    }
-
-    if (username.length < 3) {
-      return NextResponse.json(
-        { error: "L'identifiant doit contenir au moins 3 caractères." },
+        { error: 'Les champs nom complet, email et mot de passe sont requis.' },
         { status: 400 }
       );
     }
@@ -30,13 +23,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check username uniqueness
-    const existing = await prisma.user.findUnique({ where: { username } });
+    // Check email uniqueness
+    const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(
-        { error: 'Cet identifiant est déjà utilisé.' },
+        { error: 'Un compte avec cet email existe déjà.' },
         { status: 409 }
       );
+    }
+
+    // Auto-generate username from email (part before @)
+    let username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    const existingUsername = await prisma.user.findUnique({ where: { username } });
+    if (existingUsername) {
+      username = username + Math.floor(Math.random() * 9999);
     }
 
     // Find the default role (lowest level, non-admin)
@@ -44,17 +44,6 @@ export async function POST(req: NextRequest) {
       where: { builtIn: true, name: { not: 'admin' } },
       orderBy: { level: 'asc' },
     });
-
-    if (!defaultRole) {
-      // Fallback: get any role with the lowest level
-      const fallbackRole = await prisma.role.findFirst({ orderBy: { level: 'asc' } });
-      if (!fallbackRole) {
-        return NextResponse.json(
-          { error: 'Aucun rôle disponible. Contactez l\'administrateur.' },
-          { status: 500 }
-        );
-      }
-    }
 
     const roleId = defaultRole?.id || (await prisma.role.findFirst({ orderBy: { level: 'asc' } }))!.id;
 
@@ -67,7 +56,7 @@ export async function POST(req: NextRequest) {
         username,
         password: hashedPassword,
         fullname,
-        email: email || null,
+        email,
         phone: phone || null,
         roleId,
         active: true,
@@ -78,7 +67,7 @@ export async function POST(req: NextRequest) {
     await prisma.auditLog.create({
       data: {
         action: 'creation',
-        detail: `Inscription de ${user.fullname} (${user.username})`,
+        detail: `Inscription de ${user.fullname} (${user.email})`,
         userId: user.id,
       },
     });
