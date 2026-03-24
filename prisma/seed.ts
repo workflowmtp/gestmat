@@ -90,6 +90,7 @@ async function main() {
         'alerts.view','alerts.print',
         'reports.view','reports.export',
         'config.locations','config.families',
+        'ai.agent',
       ],
     },
     hse: {
@@ -102,6 +103,7 @@ async function main() {
         'campaigns.view',
         'alerts.view','alerts.print',
         'reports.view','reports.export',
+        'ai.agent',
       ],
     },
     chef_chantier: {
@@ -113,6 +115,7 @@ async function main() {
         'controls.view',
         'campaigns.view','campaigns.count',
         'alerts.view',
+        'ai.agent',
       ],
     },
     rh: {
@@ -122,6 +125,7 @@ async function main() {
         'dotations.view','dotations.create','dotations.renew','dotations.print',
         'alerts.view',
         'reports.view','reports.export',
+        'ai.agent',
       ],
     },
     maintenance: {
@@ -131,6 +135,7 @@ async function main() {
         'movements.view','movements.create',
         'controls.view','controls.create','controls.plan',
         'alerts.view',
+        'ai.agent',
       ],
     },
     direction: {
@@ -144,11 +149,12 @@ async function main() {
         'alerts.view','alerts.print',
         'reports.view','reports.export','reports.backup',
         'audit.view','audit.export',
+        'ai.agent',
       ],
     },
     consultation: {
       label: 'Consultation', level: 10,
-      perms: ['items.view','movements.view','dotations.view','controls.view','campaigns.view','alerts.view'],
+      perms: ['items.view','movements.view','dotations.view','controls.view','campaigns.view','alerts.view','ai.agent'],
     },
   };
 

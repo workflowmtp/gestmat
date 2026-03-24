@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requirePermission, getServerUser } from '@/lib/permissions';
+import { requirePermission, getServerUser, getServerPermissions } from '@/lib/permissions';
 
 // GET /api/roles — Liste tous les rôles avec leurs permissions
 export async function GET() {
   try {
-    await requirePermission('config.roles');
+    // config.users also needs role list (for user form dropdown)
+    const perms = await getServerPermissions();
+    if (!perms.includes('config.roles') && !perms.includes('config.users')) {
+      throw new Error('Permission refusée');
+    }
 
     const roles = await prisma.role.findMany({
       include: {
