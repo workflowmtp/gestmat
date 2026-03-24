@@ -34,7 +34,7 @@ export default function ItemForm({ item, isEdit }: ItemFormProps) {
     barcode: item?.barcode || '',
     unit: item?.unit || 'unité',
     qty: item?.qty || 1,
-    qtyAvailable: item?.qtyAvailable ?? item?.qty || 1,
+    qtyAvailable: item?.qtyAvailable ?? (item?.qty || 1),
     minStock: item?.minStock || '',
     state: item?.state || 'neuf',
     conformity: item?.conformity || 'conforme',

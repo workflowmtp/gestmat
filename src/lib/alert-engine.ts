@@ -15,6 +15,7 @@ export interface Alert {
 export async function computeAlerts(): Promise<Alert[]> {
   const alerts: Alert[] = [];
   const now = new Date();
+  const dayMs = 86400000;
 
   const items = await prisma.item.findMany({
     where: { archiveState: 'actif' },
@@ -24,7 +25,6 @@ export async function computeAlerts(): Promise<Alert[]> {
   const dotations = await prisma.dotation.findMany();
 
   for (const it of items) {
-    const dayMs = 86400000;
 
     // 1. Retour en retard
     if (it.returnDate && new Date(it.returnDate) < now) {
