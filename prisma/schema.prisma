@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════
+// AUTH & PERMISSIONS
+// ═══════════════════════════════════════
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  fullname  String
+  email     String?
+  phone     String?
+  active    Boolean  @default(true)
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movements           Movement[]           @relation("initiator")
+  auditLogs            AuditLog[]
+  dotationsGiven       Dotation[]           @relation("givenBy")
+  inspections          Inspection[]
+  passwordResetTokens  PasswordResetToken[]
+
+  @@index([roleId])
+  @@index([username])
+}
+
+model Role {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  label   String
+  level   Int     @default(0)
+  builtIn Boolean @default(false)
+
+  users       User[]
+  permissions RolePermission[]
+
+  createdAt DateTime @default(now())
+}
+
+model Permission {
+  id          String @id @default(cuid())
+  code        String @unique
+  label       String
+  module      String
+  description String?
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ═══════════════════════════════════════
+// ARTICLES & STOCK
+// ═══════════════════════════════════════
+
+model ItemType {
+  id    String @id @default(cuid())
+  name  String @unique
+  items Item[]
+}
+
+model ItemFamily {
+  id    String @id @default(cuid())
+  name  String @unique
+  items Item[]
+  createdAt DateTime @default(now())
+}
+
+model Item {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  barcode         String?
+  designation     String
+  typeId          String
+  type            ItemType @relation(fields: [typeId], references: [id])
+  familyId        String?
+  family          ItemFamily? @relation(fields: [familyId], references: [id])
+  subFamily       String?
+  brand           String?
+  model           String?
+  manufacturerRef String?
+  serialNumber    String?  @unique
+  unit            String   @default("unité")
+  qty             Int      @default(1)
+  qtyAvailable    Int      @default(1)
+  qtyAffected     Int      @default(0)
+  qtyHS           Int      @default(0)
+  minStock        Int?
+  state           String   @default("neuf")
+  conformity      String   @default("conforme")
+  archiveState    String   @default("actif")
+  purchaseDate    DateTime?
+  serviceDate     DateTime?
+  unitCost        Float    @default(0)
+  lifespanDays    Int?
+  lifespanAlertDays Int?
+  controlFrequency  Int?
+  nextControlDate   DateTime?
+  returnDate        DateTime?
+  locationId      String?
+  location        Location? @relation(fields: [locationId], references: [id])
+  responsible     String?
+  currentProject  String?
+  photo           String?
+  supplier        String?
+  warranty        String?
+  safetyNote      String?
+  renewalDate     DateTime?
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  movements      Movement[]
+  inspections    Inspection[]
+  dotations      Dotation[]
+  inventoryLines InventoryLine[]
+
+  @@index([code])
+  @@index([typeId])
+  @@index([familyId])
+  @@index([locationId])
+  @@index([state])
+  @@index([archiveState])
+}
+
+// ═══════════════════════════════════════
+// LOCALISATIONS
+// ═══════════════════════════════════════
+
+model Location {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  code        String
+  type        String
+  responsible String?
+  phone       String?
+  comment     String?
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items Item[]
+}
+
+// ═══════════════════════════════════════
+// MOUVEMENTS
+// ═══════════════════════════════════════
+
+model Movement {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id])
+  type        String
+  origin      String?
+  destination String?
+  userId      String
+  user        User     @relation("initiator", fields: [userId], references: [id])
+  beneficiary String?
+  qty         Int      @default(1)
+  reason      String?
+  comment     String?
+  validator   String?
+
+  @@index([itemId])
+  @@index([userId])
+  @@index([timestamp])
+  @@index([type])
+}
+
+// ═══════════════════════════════════════
+// DOTATIONS EPI
+// ═══════════════════════════════════════
+
+model Dotation {
+  id           String   @id @default(cuid())
+  employeeName String
+  epiType      String
+  epiLabel     String
+  itemId       String?
+  item         Item?    @relation(fields: [itemId], references: [id])
+  givenDate    DateTime
+  qty          Int      @default(1)
+  durationDays Int      @default(180)
+  renewalDate  DateTime?
+  size         String?
+  acknowledged Boolean  @default(false)
+  comment      String?
+  givenById    String?
+  givenBy      User?    @relation("givenBy", fields: [givenById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([employeeName])
+  @@index([itemId])
+}
+
+// ═══════════════════════════════════════
+// CONTROLES & MAINTENANCE
+// ═══════════════════════════════════════
+
+model Inspection {
+  id          String   @id @default(cuid())
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id])
+  inspType    String
+  date        DateTime
+  result      String
+  inspectorId String?
+  inspector   User?    @relation(fields: [inspectorId], references: [id])
+  notes       String?
+  newState    String?
+  createdAt   DateTime @default(now())
+
+  @@index([itemId])
+  @@index([date])
+}
+
+// ═══════════════════════════════════════
+// INVENTAIRES PHYSIQUES
+// ═══════════════════════════════════════
+
+model InventoryCampaign {
+  id             String    @id @default(cuid())
+  name           String
+  status         String    @default("en cours")
+  locationFilter String?
+  typeFilter     String?
+  responsible    String?
+  comment        String?
+  createdAt      DateTime  @default(now())
+  validatedAt    DateTime?
+
+  lines InventoryLine[]
+}
+
+model InventoryLine {
+  id             String            @id @default(cuid())
+  campaignId     String
+  campaign       InventoryCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  itemId         String
+  item           Item              @relation(fields: [itemId], references: [id])
+  theoreticalQty Int
+  physicalQty    Int?
+  ecart          Int?
+  justification  String?
+
+  @@index([campaignId])
+}
+
+// ═══════════════════════════════════════
+// AUDIT & PARAMÈTRES
+// ═══════════════════════════════════════
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  detail    String
+  itemId    String?
+
+  @@index([timestamp])
+  @@index([action])
+  @@index([userId])
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
