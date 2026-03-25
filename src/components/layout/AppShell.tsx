@@ -9,10 +9,16 @@ import { useAppStore } from '@/stores/app-store';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const fetchCurrentUser = useAppStore((s) => s.fetchCurrentUser);
+  const theme = useAppStore((s) => s.theme);
 
   useEffect(() => {
     fetchCurrentUser();
   }, [fetchCurrentUser]);
+
+  // Apply theme on mount and when it changes
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   return (
     <div className="flex min-h-screen">

@@ -42,7 +42,7 @@ const NAV_SECTIONS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { sidebarOpen, closeSidebar, currentUser } = useAppStore();
+  const { sidebarOpen, closeSidebar, currentUser, theme, toggleTheme } = useAppStore();
 
   const perms: string[] = currentUser?.permissions || [];
   const userInitials = currentUser?.fullname ? initials(currentUser.fullname) : '??';
@@ -124,8 +124,16 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="px-5 py-3 border-t border-gm-border">
+        {/* Theme toggle + Logout */}
+        <div className="px-5 py-3 border-t border-gm-border space-y-2">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-2 px-3 py-2.5 w-full border border-gm-border rounded-gm-sm
+              text-txt-secondary text-sm transition-all
+              hover:border-accent hover:text-accent hover:bg-accent-light">
+            <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <span>{theme === 'dark' ? 'Mode clair' : 'Mode sombre'}</span>
+          </button>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="flex items-center gap-2 px-3 py-2.5 w-full border border-gm-border rounded-gm-sm

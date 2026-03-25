@@ -17,10 +17,16 @@ interface CurrentUser {
   permissions: string[];
 }
 
+type Theme = 'dark' | 'light';
+
 interface AppState {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   closeSidebar: () => void;
+
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
 
   toasts: Toast[];
   showToast: (message: string, type?: Toast['type']) => void;
@@ -37,10 +43,28 @@ interface AppState {
   clearCurrentUser: () => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
+function getInitialTheme(): Theme {
+  if (typeof window !== 'undefined') {
+    return (localStorage.getItem('gm-theme') as Theme) || 'dark';
+  }
+  return 'dark';
+}
+
+function applyTheme(theme: Theme) {
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('gm-theme', theme);
+  }
+}
+
+export const useAppStore = create<AppState>((set, get) => ({
   sidebarOpen: false,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   closeSidebar: () => set({ sidebarOpen: false }),
+
+  theme: getInitialTheme(),
+  setTheme: (theme) => { applyTheme(theme); set({ theme }); },
+  toggleTheme: () => { const next = get().theme === 'dark' ? 'light' : 'dark'; applyTheme(next); set({ theme: next }); },
 
   toasts: [],
   showToast: (message, type = 'info') => {

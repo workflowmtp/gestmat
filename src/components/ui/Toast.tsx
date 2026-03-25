@@ -3,10 +3,10 @@
 import { useAppStore } from '@/stores/app-store';
 
 const STYLES = {
-  success: 'bg-[#065f46] text-[#a7f3d0] border-success',
-  error:   'bg-[#7f1d1d] text-[#fca5a5] border-danger',
-  warning: 'bg-[#78350f] text-[#fde68a] border-warning',
-  info:    'bg-[#1e3a5f] text-[#93c5fd] border-info',
+  success: 'bg-success-bg text-success border-success',
+  error:   'bg-danger-bg text-danger border-danger',
+  warning: 'bg-warning-bg text-warning border-warning',
+  info:    'bg-info-bg text-info border-info',
 };
 
 const ICONS = { success: '✓', error: '✗', warning: '⚠', info: 'ℹ' };
