@@ -1,12 +1,14 @@
 import { auth } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 // ═══════════════════════════════════════
 // SERVER-SIDE: vérification permissions dans API routes
+// Permissions are fetched FRESH from DB, not from JWT token
 // ═══════════════════════════════════════
 
 export async function getServerPermissions(): Promise<string[]> {
-  const session = await auth();
-  return (session?.user as any)?.permissions || [];
+  const user = await getServerUser();
+  return user?.permissions || [];
 }
 
 export async function checkServerPermission(code: string): Promise<boolean> {
@@ -24,14 +26,31 @@ export async function requirePermission(code: string) {
 export async function getServerUser() {
   const session = await auth();
   if (!session?.user) return null;
-  const u = session.user as any;
+  const userId = (session.user as any).id;
+  if (!userId) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      role: {
+        include: {
+          permissions: {
+            include: { permission: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!user || !user.active) return null;
+
   return {
-    id: u.id as string,
-    name: u.name as string,
-    email: u.email as string | null,
-    role: u.role as string,
-    roleLabel: u.roleLabel as string,
-    permissions: (u.permissions || []) as string[],
+    id: user.id,
+    name: user.fullname,
+    email: user.email,
+    role: user.role.name,
+    roleLabel: user.role.label,
+    permissions: user.role.permissions.map((rp) => rp.permission.code),
   };
 }
 
